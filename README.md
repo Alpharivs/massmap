@@ -20,7 +20,7 @@ Massmap is a wrapper for Masscan and Nmap that takes the output from masscan and
 
 It's just a personal project that I made to practice go and that I use as part of my workflow when doing CTFs, it's not meant to be a replacement for any other tool but maybe a part of the code or idea can be useful for someone else who knows !!
 
-_DIsclaimer it's not meant to be safe (a.k.a there's a command injection vulnerability and it probably needs editing if you don't have masscan or nmap in the same path, it's just a tool for playing around in CTF's_
+_DIsclaimer: it's not meant to be safe (a.k.a there's a command injection vulnerability) and it probably needs editing if you don't have masscan or nmap in the same path, it's just a tool for playing around in CTF's_
 
 ## Usage
 
