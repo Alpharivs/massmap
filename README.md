@@ -25,7 +25,7 @@ It's just a personal project that I made to practice go and that I use as part o
 *[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), the workaround was using a docker container with an older version in order to use it uncomment the following line in '/massScan/massScan.go'.*
 
 ```go
-17 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
+18 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
 ```
 
 - Clone the repo to compile it and modify it (Make sure to have golang installed!).
@@ -53,12 +53,13 @@ Usage of massmap:
 
 ## Example 
 
-Using the retired machine Dab from [Hack The Box](https://app.hackthebox.com)
+Using the retired machine Fulcrum from [Hack The Box](https://app.hackthebox.com)
 - Start of Scan: ![](assets/scan-start.png)
-- Results: ![](assets/scan-results.png)
+- Progress animation!: ![](assets/progress-scan.png)
+- Results: ![](assets/scan-result.png)
 - Saved Results:
 ```bash
-❯ ls recon
+❯ ls
  nmap.out
 ```
 <h2 align="center" > LVX-SIT</h2>
