@@ -30,11 +30,11 @@ It's just a personal project that I made to practice go and that I use as part o
 
 - Clone the repo to compile it and modify it (Make sure to have golang installed!).
 ```bash
-git clone https://github.com/Alpharivs/go-scan.git
+git clone https://github.com/Alpharivs/massmap.git
 ```
 - Make the changes that you want and compile.
 ```bash
-go build -o go-scann main.go
+go build -o massmap main.go
 ```
 - select the target plus any other custom option that you want.
 ```bash
