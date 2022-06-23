@@ -14,19 +14,18 @@ import (
 )
 
 func Scan(ip, inter, rate string) string {
-	// masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
-
-	// Using exec.Command directly with masscan didn't work
-	masscanCmd := fmt.Sprintf("sudo masscan %s -p1-10000 -e %s --rate=%s --wait=5", ip, inter, rate)
-
+	/* Using exec.Command directly with masscan didn't work
+	   masscanCmd := fmt.Sprintf("sudo masscan %s -p1-65535,U:1-65535 -e %s --rate=%s --wait=5", ip, inter, rate) */
+	masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
 	cmd := exec.Command("bash", "-c", masscanCmd)
+	// Interruption Handler
 	terminator.InterruptMasscan(cmd)
-	// a : setup for stdout capture (not capturing stderr)
+	// setup for stdout capture (not capturing stderr)
 	var stdBuffer bytes.Buffer
 	live := io.MultiWriter(os.Stdout, &stdBuffer)
 	cmd.Stdout = live
 	cmd.Stderr = live
-	// b : capturing stdout //Could it be improved with combinedoutput()?
+	// capturing stdout //Could it be improved with combinedoutput()?
 	output := &bytes.Buffer{}
 	cmd.Stdout = output
 	// Executing the command with run to block untill it finishes
@@ -34,9 +33,9 @@ func Scan(ip, inter, rate string) string {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	// a : Print live output
+	// Print live output
 	log.Println(stdBuffer.String())
-	// b : storing output for parsing
+	// storing output for parsing
 	capturedOutput := output.Bytes()
 	return string(capturedOutput)
 

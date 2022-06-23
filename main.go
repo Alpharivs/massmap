@@ -4,14 +4,14 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Alpharivs/massmap/massScan"
 	"github.com/Alpharivs/massmap/nmapScan"
-	"github.com/Alpharivs/massmap/terminator"
+	"github.com/theckman/yacspin"
 
 	"github.com/fatih/color"
 )
@@ -29,6 +29,28 @@ var (
 	wg       sync.WaitGroup
 )
 
+func createSpinner() (*yacspin.Spinner, error) {
+	// Build the configuration
+	cfg := yacspin.Config{
+		Frequency:         100 * time.Millisecond,
+		CharSet:           yacspin.CharSets[11],
+		Suffix:            " ",
+		SuffixAutoColon:   true,
+		ColorAll:          false,
+		Colors:            []string{"fgRed"},
+		StopFailCharacter: "✗",
+		StopFailColors:    []string{"fgRed"},
+		StopFailMessage:   "failed",
+	}
+
+	s, err := yacspin.New(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make spinner from struct: %w", err)
+	}
+
+	return s, nil
+}
+
 func main() {
 	flag.Parse()
 	// Required flags check
@@ -37,41 +59,58 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	// Bootleg way of executing a different interrupt function for masscan as interrupting masscan involves cleanup (paused.cnf)
-	if strings.Contains(*flTarget, ":") {
-		terminator.Interrupt()
+	// Initiate Spinner
+	spinner, err := createSpinner()
+	if err != nil {
+		fmt.Printf("failed to make spinner from config struct: %v\n", err)
+		os.Exit(1)
 	}
 
-	color.Blue(banner + "\n\n  LVX SIT - ALPHARIVS - MMXXII \n\n")
+	color.Blue(banner)
+	color.Red("\n    LVX SIT - ALPHARIVS - MMXXII \n\n")
 
 	switch {
-	// Target IP isIPv4
+	// Target IP is IPv4
 	case strings.Contains(*flTarget, "."):
-		log.Printf("%s %s %s \n", warning, color.BlueString("Executing Masscan"), warning)
-		result := massScan.Scan(*flTarget, *flInter, *flRate)
+		fmt.Printf("%s %s %s \n", warning, color.YellowString("Executing Masscan"), warning)
 		//Print the output of masscan if any
+		result := massScan.Scan(*flTarget, *flInter, *flRate)
 		if len(result) > 0 {
-			fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), color.CyanString(result))
+			fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), result)
 		}
 		// Pass TCP and UDP or only TCP results to nmap
-		log.Printf("%s %s %s\n", warning, color.BlueString("Executing Nmap scan"), warning)
 		if strings.Contains(result, "/udp") {
+			// Run Spinner
+			spinner.Start()
+			spinner.Message("Executing Nmap TCP and UDP scan")
+			// Store and pass the masscan result into nmap TCP and UDP concurrent scans
 			openPorts := massScan.ResultParser(result, "tcp")
 			wg.Add(1)
-			go nmapScan.Ipv4TCP(openPorts, *flTarget, *flFolder, &wg)
+			go nmapScan.Scan("-sS", openPorts, *flTarget, *flFolder, &wg, spinner)
 			openPorts = massScan.ResultParser(result, "udp")
 			wg.Add(1)
-			go nmapScan.Ipv4UDP(openPorts, *flTarget, *flFolder, &wg)
+			go nmapScan.Scan("-sU", openPorts, *flTarget, *flFolder, &wg, spinner)
 			wg.Wait()
+			spinner.Stop()
 		} else {
+			// Run Spinner
+			spinner.Start()
+			messages := color.YellowString("Executing Nmap TCP scan")
+			spinner.Message(messages)
+			// Store and pass the masscan result into nmap TCP scan
 			openPorts := massScan.ResultParser(result, "tcp")
 			wg.Add(1)
-			go nmapScan.Ipv4TCP(openPorts, *flTarget, *flFolder, &wg)
+			go nmapScan.Scan("-sS", openPorts, *flTarget, *flFolder, &wg, spinner)
 			wg.Wait()
+			spinner.Stop()
 		}
 	// Target IP is IPv6
 	case strings.Contains(*flTarget, ":"):
-		log.Printf("%s %s %s\n", warning, color.BlueString("IPv6 Detected executing Nmap IPv6 scan"), warning)
-		nmapScan.Ipv6(*flTarget, *flFolder)
+		// Run Spinner
+		spinner.Start()
+		spinner.Message("IPv6 Detected executing Nmap IPv6 scan")
+		// Execute Masscan
+		nmapScan.Ipv6(*flTarget, *flFolder, spinner)
+		spinner.Stop()
 	}
 }

@@ -8,36 +8,33 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/theckman/yacspin"
 )
-
-//clean paused.conf generated when interrupting masscan
-func cleanup() {
-	color.Red("\r- Cleaning Up -")
-	_ = os.Remove("paused.conf")
-	color.Red("- EXTERMINATVS PROTOCOL ACTIVATED -")
-	color.Red("- 487964726120446f6d696e617475730a -")
-}
 
 func InterruptMasscan(cmd *exec.Cmd) {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		//generating a delay bewteen killing masscan and calling cleanupto give time for file generation
 		cmd.Process.Kill()
+		//generating a delay bewteen killing masscan and calling cleanupto give time for file generation
 		time.Sleep(1 * time.Second)
-		cleanup()
+		// cleanup paused.conf
+		_ = os.Remove("paused.conf")
+		color.Red("\n\r✗ interrupted")
 		os.Exit(0)
 	}()
 }
 
-func Interrupt() {
+func Interrupt(spinner *yacspin.Spinner) {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		color.Red("\r- EXTERMINATVS PROTOCOL ACTIVATED -")
-		color.Red("\r- 487964726120446f6d696e617475730a -")
+		/* ensure we stop the spinner before exiting, otherwise cursor will remain
+		   hidden and terminal will require a `reset` */
+		spinner.StopFailMessage("interrupted")
+		_ = spinner.StopFail()
 		os.Exit(0)
 	}()
 }
