@@ -58,6 +58,7 @@ Usage of massmap:
 Using the retired machine Fulcrum from [Hack The Box](https://app.hackthebox.com)
 - Start of Scan: ![](assets/scan-start.png)
 - Progress animation!: 
+
 ![](assets/progress-scan.png)
 - Results: ![](assets/scan-result.png)
 - Saved Results:
