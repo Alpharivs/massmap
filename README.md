@@ -20,14 +20,18 @@ Massmap is a wrapper for Masscan and Nmap that takes the output from masscan and
 
 It's just a personal project that I made to practice go and that I use as part of my workflow when doing CTFs, it's not meant to be a replacement for any other tool but maybe a part of the code or idea can be useful for someone else who knows !!
 
-_DIsclaimer: it's not meant to be safe (a.k.a there's a command injection vulnerability) and it probably needs editing if you don't have masscan or nmap in the same path, it's just a tool for playing around in CTF's_
+_Disclaimer: it's not meant to be safe (a.k.a there's a command injection vulnerability), it's just a tool for playing around in CTF's_
 
 ## Usage
 
-*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), the workaround was using a docker container with an older version in order to use it uncomment the following line in '/massScan/massScan.go'.*
+*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), it will eventually stop itself but a workaround is using a dockerized version of masscan, in order to use the docker version just edit the following in '/massScan/massScan.go'.*
 
 ```go
+// Uncomment line 18
 18 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
+
+// Comment line 20
+20 - masscanCmd := fmt.Sprintf("sudo masscan %s -p1-65535,U:1-65535 -e %s --rate=%s --wait=5", ip, inter, rate)
 ```
 
 - Clone the repo to compile it and modify it (Make sure to have golang installed!).

@@ -16,7 +16,7 @@ import (
 func Scan(ip, inter, rate string) string {
 	// Docker fix
 	//masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
-	// Using exec.Command directly with masscan didn't work
+	// exec.Command won't work because of sudo
 	masscanCmd := fmt.Sprintf("sudo masscan %s -p1-65535,U:1-65535 -e %s --rate=%s --wait=5", ip, inter, rate)
 	cmd := exec.Command("bash", "-c", masscanCmd)
 	// Interruption Handler
