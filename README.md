@@ -24,7 +24,7 @@ _Disclaimer: it's not meant to be safe (a.k.a there's a command injection vulner
 
 ## Usage
 
-*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c if it takes to long and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan by edit the following lines in '/massScan/massScan.go'.*
+*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan by edit the following lines in '/massScan/massScan.go'.*
 
 ```go
 // Uncomment line 17
