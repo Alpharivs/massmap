@@ -12,7 +12,7 @@ import (
 )
 
 func InterruptMasscan(cmd *exec.Cmd) {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
@@ -21,13 +21,11 @@ func InterruptMasscan(cmd *exec.Cmd) {
 		time.Sleep(1 * time.Second)
 		// cleanup paused.conf
 		_ = os.Remove("paused.conf")
-		color.Red("\n\r✗ interrupted")
-		os.Exit(0)
 	}()
 }
 
 func Interrupt(spinner *yacspin.Spinner) {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c

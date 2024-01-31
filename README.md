@@ -11,8 +11,8 @@ Massmap is a wrapper for Masscan and Nmap that takes the output from masscan and
 ## Features
 - Automatically detects if target's IP is v4 or v6
 - Outputs full masscan TCP and UPD result and pipes it to nmap.
-- Parses result for UDP and TCP ports and scans them with namp concurrently.
-- Saves nmap result to file. 
+- Parses result for UDP and TCP ports and concurrently scans them with namp.
+- Saves nmap results to file. 
 
 <img src="assets/gopher.png" align="right" width="200" height="180" />
 
@@ -24,14 +24,14 @@ _Disclaimer: it's not meant to be safe (a.k.a there's a command injection vulner
 
 ## Usage
 
-*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), it will eventually stop itself but a workaround is using a dockerized version of masscan, in order to use the docker version just edit the following in '/massScan/massScan.go'.*
+*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c if it takes to long and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan by edit the following lines in '/massScan/massScan.go'.*
 
 ```go
-// Uncomment line 18
-18 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
+// Uncomment line 17
+17 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
 
-// Comment line 20
-20 - masscanCmd := fmt.Sprintf("sudo masscan %s -p1-65535,U:1-65535 -e %s --rate=%s --wait=5", ip, inter, rate)
+// Comment line 18
+18 - masscanCmd := fmt.Sprintf("masscan %s -p1-65535,U:1-65535 -e %s --rate=%s", ip, inter, rate)
 ```
 
 - Clone the repo to compile it and modify it (Make sure to have golang installed!).

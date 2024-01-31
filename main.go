@@ -73,10 +73,13 @@ func main() {
 	// Target IP is IPv4
 	case strings.Contains(*flTarget, "."):
 		fmt.Printf("%s %s %s \n", warning, color.YellowString("Executing Masscan"), warning)
-		//Print the output of masscan if any
+		//Print output if it was captured otherwise exit the program.
 		result := massScan.Scan(*flTarget, *flInter, *flRate)
 		if len(result) > 0 {
 			fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), result)
+		} else {
+			color.Red("\n\r✗ Masscan was interrupted and no port was found")
+			os.Exit(0)
 		}
 		// Pass TCP and UDP or only TCP results to nmap
 		if strings.Contains(result, "/udp") {

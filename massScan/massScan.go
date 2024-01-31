@@ -14,11 +14,9 @@ import (
 )
 
 func Scan(ip, inter, rate string) string {
-	// Docker fix
 	//masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
-	// direct use of exec.Command won't work because of sudo
-	masscanCmd := fmt.Sprintf("sudo masscan %s -p1-65535,U:1-65535 -e %s --rate=%s --wait=5", ip, inter, rate)
-	cmd := exec.Command("bash", "-c", masscanCmd)
+	masscanCmd := fmt.Sprintf("masscan %s -p1-65535,U:1-65535 -e %s --rate=%s", ip, inter, rate)
+	cmd := exec.Command("sudo", masscanCmd)
 	// Interruption Handler
 	terminator.InterruptMasscan(cmd)
 	// setup for stdout capture (not capturing stderr)
@@ -32,7 +30,7 @@ func Scan(ip, inter, rate string) string {
 	// Executing the command with run to block untill it finishes
 	err := cmd.Run()
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	// Print live output
 	log.Println(stdBuffer.String())
