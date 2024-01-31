@@ -42,7 +42,7 @@ git clone https://github.com/Alpharivs/massmap.git
 ```bash
 go build -o massmap main.go
 ```
-- select the target plus any other custom option that you want.
+- Input the target plus any other custom option that you want.
 ```bash
 ❯ massmap -h
 Usage of massmap:
@@ -55,7 +55,7 @@ Usage of massmap:
   -u string
     	Target IP (Required)
 ```
-- execute !
+- execute!
 
 ## Example 
 
