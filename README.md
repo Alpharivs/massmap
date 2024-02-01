@@ -26,16 +26,16 @@ _Disclaimer: it's just a tool for playing around in CTF's_
 
 *[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan using the -docker flag*
 
+- Clone the repo to compile it and/or modify it (Make sure to have golang installed!).
+```bash
+git clone https://github.com/Alpharivs/massmap.git
+```
 - Check that the path to your sudo binary is '/usr/bin/sudo' and if not edit it 'massScan/massScan.go', a relative path could have been used to avoid this but I'm not a fan of path hijacking ;)
 ```go
 // Edit path if necessary
 17 - sudoPath := "/usr/bin/sudo"
 ```
-- Clone the repo to compile it and modify it (Make sure to have golang installed!).
-```bash
-git clone https://github.com/Alpharivs/massmap.git
-```
-- Make the changes that you want and compile.
+- Compile it after making the changes that you want.
 ```bash
 go build -o massmap main.go
 ```
