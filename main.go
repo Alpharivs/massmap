@@ -20,10 +20,11 @@ import (
 var banner string
 
 var (
-	flInter  = flag.String("e", "tun0", "NIC for Masscan")
+	flInter  = flag.String("e", "tun0", "NIC for masscan")
 	flTarget = flag.String("u", "", "Target IP (Required)")
-	flRate   = flag.String("r", "500", "Rate for Masscan")
-	flFolder = flag.String("o", ".", "Folder to save Nmap output without trailing '/'")
+	flRate   = flag.String("r", "500", "Rate for masscan")
+	flFolder = flag.String("o", ".", "Folder to save nmap output without trailing '/'") // I will improve this function later
+	flDocker = flag.Bool("docker", false, "Use a dockerized version of masscan.")
 	warning  = color.RedString("[!]")
 	arrows   = color.RedString("==>")
 	wg       sync.WaitGroup
@@ -73,17 +74,16 @@ func main() {
 	// Target IP is IPv4
 	case strings.Contains(*flTarget, "."):
 		fmt.Printf("%s %s %s \n", warning, color.YellowString("Executing Masscan"), warning)
+		result := massScan.Scan(*flTarget, *flInter, *flRate, *flDocker)
 		//Print output if it was captured otherwise exit the program.
-		result := massScan.Scan(*flTarget, *flInter, *flRate)
 		if len(result) > 0 {
 			fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), result)
 		} else {
 			color.Red("\n\r✗ Masscan was interrupted and no port was found")
-			os.Exit(0)
+			os.Exit(1)
 		}
 		// Pass TCP and UDP or only TCP results to nmap
 		if strings.Contains(result, "/udp") {
-			// Run Spinner
 			spinner.Start()
 			spinner.Message("Executing Nmap TCP and UDP scan")
 			// Store and pass the masscan result into nmap TCP and UDP concurrent scans
@@ -96,7 +96,6 @@ func main() {
 			wg.Wait()
 			spinner.Stop()
 		} else {
-			// Run Spinner
 			spinner.Start()
 			messages := color.YellowString("Executing Nmap TCP scan")
 			spinner.Message(messages)
@@ -109,7 +108,6 @@ func main() {
 		}
 	// Target IP is IPv6
 	case strings.Contains(*flTarget, ":"):
-		// Run Spinner
 		spinner.Start()
 		spinner.Message("IPv6 Detected executing Nmap IPv6 scan")
 		// Execute Masscan

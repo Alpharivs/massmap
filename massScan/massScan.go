@@ -13,31 +13,34 @@ import (
 	"github.com/Alpharivs/massmap/terminator"
 )
 
-func Scan(ip, inter, rate string) string {
-	//masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
-	masscanCmd := fmt.Sprintf("masscan %s -p1-65535,U:1-65535 -e %s --rate=%s", ip, inter, rate)
-	cmd := exec.Command("sudo", masscanCmd)
+func Scan(ip, inter, rate string, docker bool) string {
+	sudoPath := "/usr/bin/sudo"
+
+	var cmd *exec.Cmd
+	if docker {
+		cmd = exec.Command(sudoPath, "docker", "run", "-i", "--network", "host", "--rm", "adarnimrod/masscan", "-p1-65535,U:1-65535", ip, "-e", inter, "--rate="+rate, "--wait=5")
+	} else {
+		cmd = exec.Command(sudoPath, "masscan", ip, "-p1-65535,U:1-65535", "-e", inter, "--rate="+rate)
+	}
 	// Interruption Handler
 	terminator.InterruptMasscan(cmd)
-	// setup for stdout capture (not capturing stderr)
+	// Capture live progress
 	var stdBuffer bytes.Buffer
-	live := io.MultiWriter(os.Stdout, &stdBuffer)
-	cmd.Stdout = live
-	cmd.Stderr = live
-	// capturing stdout //Could it be improved with combinedoutput()?
-	output := &bytes.Buffer{}
-	cmd.Stdout = output
-	// Executing the command with run to block untill it finishes
+	liveProgress := io.MultiWriter(os.Stdout, &stdBuffer)
+	cmd.Stdout = liveProgress
+	cmd.Stderr = liveProgress
+	// Capture live results
+	var output bytes.Buffer
+	liveResults := io.MultiWriter(os.Stdout, &output)
+	cmd.Stdout = liveResults
+	// Executing the command with Run() to block until it finishes
 	err := cmd.Run()
 	if err != nil {
 		log.Println(err)
 	}
-	// Print live output
-	log.Println(stdBuffer.String())
-	// storing output for parsing
+	// storing output
 	capturedOutput := output.Bytes()
 	return string(capturedOutput)
-
 }
 
 func ResultParser(data, protocol string) string {

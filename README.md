@@ -20,20 +20,17 @@ Massmap is a wrapper for Masscan and Nmap that takes the output from masscan and
 
 It's just a personal project that I made to practice go and that I use as part of my workflow when doing CTFs, it's not meant to be a replacement for any other tool but maybe a part of the code or idea can be useful for someone else who knows !!
 
-_Disclaimer: it's not meant to be safe (a.k.a there's a command injection vulnerability), it's just a tool for playing around in CTF's_
+_Disclaimer: it's just a tool for playing around in CTF's_
 
 ## Usage
 
-*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan by edit the following lines in '/massScan/massScan.go'.*
+*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan using the -docker flag*
 
+- Check that the path to your sudo binary is '/usr/bin/sudo' and if not edit it 'massScan/massScan.go', a relative path could have been used to avoid this but I'm not a fan of path hijacking ;)
 ```go
-// Uncomment line 17
-17 - masscanCmd := fmt.Sprintf("sudo docker run -i --network host --rm adarnimrod/masscan -p1-65535,U:1-65535 %s -e %s --rate=%s --wait=5", ip, inter, rate)
-
-// Comment line 18
-18 - masscanCmd := fmt.Sprintf("masscan %s -p1-65535,U:1-65535 -e %s --rate=%s", ip, inter, rate)
+// Edit path if necessary
+17 - sudoPath := "/usr/bin/sudo"
 ```
-
 - Clone the repo to compile it and modify it (Make sure to have golang installed!).
 ```bash
 git clone https://github.com/Alpharivs/massmap.git
@@ -46,10 +43,12 @@ go build -o massmap main.go
 ```bash
 ❯ massmap -h
 Usage of massmap:
+  -docker
+    	Use a Dockerized version of masscan.
   -e string
     	NIC for Masscan (default "tun0")
   -o string
-    	Folder to save Nmap output without trailing '/' (default ".")
+    	Folder to save Nmap output without trailing '/' (default ".") # I will improve this function later
   -r string
     	Rate for Masscan (default "500")
   -u string
