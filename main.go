@@ -68,7 +68,7 @@ func main() {
 	}
 
 	color.Blue(banner)
-	color.Red("\n    LVX SIT - ALPHARIVS - MMXXII \n\n")
+	color.Red("\n    LVX SIT - ALPHARIVS - MMDCCLXXVII \n\n")
 
 	switch {
 	// Target IP is IPv4
