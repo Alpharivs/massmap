@@ -24,7 +24,7 @@ _Disclaimer: it's just a tool for playing around in CTF's_
 
 ## Usage
 
-*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan using the -docker flag*
+*[!] Masscan has an issue when stopping while using a vpn see [here](https://github.com/robertdavidgraham/masscan/issues/144), you can simply interrupt the countdown pressing ctrl+c and it will still pipe any detected port to nmap. Alternatively you can use a dockerized version of masscan that doesn't suffer from that issue using the -docker flag*
 
 - Clone the repo to compile it and/or modify it (Make sure to have golang installed!).
 ```bash
