@@ -39,7 +39,7 @@ git clone https://github.com/Alpharivs/massmap.git
 ```bash
 go build -o massmap main.go
 ```
-- Input the target plus any other custom option that you want.
+- Input the target plus any other option that you want.
 ```bash
 ❯ massmap -h
 Usage of massmap:
