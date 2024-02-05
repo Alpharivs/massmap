@@ -11,9 +11,8 @@ import (
 
 	"github.com/Alpharivs/massmap/massScan"
 	"github.com/Alpharivs/massmap/nmapScan"
-	"github.com/theckman/yacspin"
-
 	"github.com/fatih/color"
+	"github.com/theckman/yacspin"
 )
 
 //go:embed banner.txt
@@ -67,41 +66,69 @@ func main() {
 	}
 	// Banner
 	color.Blue(banner)
-	color.Red("\n    LVX SIT - ALPHARIVS - MMDCCLXXVII \n\n")
+	color.Red("\n   LVX SIT - ALPHARIVS - MMDCCLXXVII \n\n")
 
 	switch {
 	// Target IP is IPv4
 	case strings.Contains(*flTarget, "."):
 		fmt.Printf("%s %s %s \n", warning, color.YellowString("Executing Masscan"), warning)
-		// Run masscan and print output if it was captured otherwise exit the program.
+		// Run masscan
 		result := massScan.Scan(*flTarget, *flInter, *flRate, *flDocker)
 		// Separate and store TCP and UDP results
 		tcpPorts, udpPorts := massScan.ResultParser(result)
-		// Check if UDP scanning is necessary else run only TCP scan.
-		if udpPorts != "" {
+		// Check whether both UDP and TCP are present or if only one of both is present.
+		if tcpPorts != "" && udpPorts != "" {
 			spinner.Start()
 			message := color.YellowString("Executing Nmap TCP and UDP scan")
 			spinner.Message(message)
 			defer spinner.Stop()
-			// Changed to anonymous routine from 'go nmapScan.Scan("-sU", udpPorts, *flTarget, *flFolder, &wg, spinner)'
-			// if only tcp is discovered there's no need for Scan to run with concurrency and the solution was using the wg.Done() in an anon. routine
+			// Create buffered channels to receive output and prevent deadlock.
+			tcpOutput := make(chan []byte, 1)
+			udpOutput := make(chan []byte, 1)
+			/* Changed to anonymous routine from 'go nmapScan.Scan("-sU", udpPorts, *flTarget, *flFolder, &wg, spinner)'
+			if only tcp is discovered there's no need for Scan to run with concurrency and the solution was using the wg.Done() in an anon. routine */
 			wg.Add(2)
 			go func() {
 				defer wg.Done()
-				nmapScan.Scan("-sS", tcpPorts, *flTarget, *flFolder, spinner)
+				output := nmapScan.Scan("-sS", tcpPorts, *flTarget, spinner)
+				fmt.Print("\r\033[K")
+				fmt.Println("\r[!] TCP scan completed.")
+				// Send output to channel
+				tcpOutput <- output
 			}()
 			go func() {
 				defer wg.Done()
-				nmapScan.Scan("-sU", udpPorts, *flTarget, *flFolder, spinner)
+				output := nmapScan.Scan("-sU", udpPorts, *flTarget, spinner)
+				fmt.Print("\r\033[K")
+				fmt.Println("\r[!] UDP scan completed.")
+				// Send output to channel
+				udpOutput <- output
 			}()
 			wg.Wait()
-		} else {
+			// Receive output from channel and pass it to the EndScan function to ensure that TCP and UDP results will be printed when both routines finish.
+			tcpResult := <-tcpOutput
+			udpResult := <-udpOutput
+			close(tcpOutput)
+			close(udpOutput)
+
+			nmapScan.EndScan("TCP", *flFolder, "/nmap.out", tcpResult)
+			nmapScan.EndScan("UDP", *flFolder, "/nmap_udp.out", udpResult)
+		} else if tcpPorts != "" {
 			spinner.Start()
 			message := color.YellowString("Executing Nmap TCP scan")
 			spinner.Message(message)
 			defer spinner.Stop()
 
-			nmapScan.Scan("-sS", tcpPorts, *flTarget, *flFolder, spinner)
+			tcpResult := nmapScan.Scan("-sS", tcpPorts, *flTarget, spinner)
+			nmapScan.EndScan("TCP", *flFolder, "/nmap.out", tcpResult)
+		} else {
+			spinner.Start()
+			message := color.YellowString("Executing Nmap UDP scan")
+			spinner.Message(message)
+			defer spinner.Stop()
+
+			udpResult := nmapScan.Scan("-sU", udpPorts, *flTarget, spinner)
+			nmapScan.EndScan("UDP", *flFolder, "/nmap_udp.out", udpResult)
 		}
 	// Target IP is IPv6
 	case strings.Contains(*flTarget, ":"):
@@ -110,6 +137,7 @@ func main() {
 		spinner.Message(message)
 		defer spinner.Stop()
 
-		nmapScan.Ipv6(*flTarget, *flFolder, spinner)
+		ip6Result := nmapScan.Ipv6(*flTarget, spinner)
+		nmapScan.EndScan("IPv6", *flFolder, "/nmap_v6.out", ip6Result)
 	}
 }
