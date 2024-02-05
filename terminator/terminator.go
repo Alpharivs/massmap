@@ -17,6 +17,7 @@ func InterruptMasscan(cmd *exec.Cmd) {
 	go func() {
 		<-c
 		cmd.Process.Kill()
+		color.Red("\n\r✗ Interrupted, piping results to Nmap")
 		//generating a delay bewteen killing masscan and calling cleanupto give time for file generation
 		time.Sleep(1 * time.Second)
 		// cleanup paused.conf

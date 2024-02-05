@@ -82,17 +82,15 @@ func main() {
 			color.Red("\n\r✗ Masscan was interrupted and no port was found")
 			os.Exit(1)
 		}
+		tcpPorts, udpPorts := massScan.ResultParser(result)
 		// Pass TCP and UDP or only TCP results to nmap
-		if strings.Contains(result, "/udp") {
+		if udpPorts != "" {
 			spinner.Start()
 			spinner.Message("Executing Nmap TCP and UDP scan")
 			// Store and pass the masscan result into nmap TCP and UDP concurrent scans
-			openPorts := massScan.ResultParser(result, "tcp")
-			wg.Add(1)
-			go nmapScan.Scan("-sS", openPorts, *flTarget, *flFolder, &wg, spinner)
-			openPorts = massScan.ResultParser(result, "udp")
-			wg.Add(1)
-			go nmapScan.Scan("-sU", openPorts, *flTarget, *flFolder, &wg, spinner)
+			wg.Add(2)
+			go nmapScan.Scan("-sS", tcpPorts, *flTarget, *flFolder, &wg, spinner)
+			go nmapScan.Scan("-sU", udpPorts, *flTarget, *flFolder, &wg, spinner)
 			wg.Wait()
 			spinner.Stop()
 		} else {
@@ -100,9 +98,8 @@ func main() {
 			messages := color.YellowString("Executing Nmap TCP scan")
 			spinner.Message(messages)
 			// Store and pass the masscan result into nmap TCP scan
-			openPorts := massScan.ResultParser(result, "tcp")
 			wg.Add(1)
-			go nmapScan.Scan("-sS", openPorts, *flTarget, *flFolder, &wg, spinner)
+			go nmapScan.Scan("-sS", tcpPorts, *flTarget, *flFolder, &wg, spinner)
 			wg.Wait()
 			spinner.Stop()
 		}

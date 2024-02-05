@@ -43,23 +43,25 @@ func Scan(ip, inter, rate string, docker bool) string {
 	return string(capturedOutput)
 }
 
-func ResultParser(data, protocol string) string {
+func ResultParser(data string) (tcpResult string, udpResult string) {
 	// Regex rules for extracting ports
 	rules := regexp.MustCompile(`(\d+)/tcp|(\d+)/udp`)
 	filteredString := rules.FindAllString(data, -1)
 	// Extract Ports for the given protocol
-	port := []string{}
-	for i := range filteredString {
-		if strings.HasSuffix(filteredString[i], "/"+protocol) {
-			port = append(port, filteredString[i])
+	var tcpPorts, udpPorts []string
+
+	for _, port := range filteredString {
+		if strings.HasSuffix(port, "/tcp") {
+			tcpPorts = append(tcpPorts, strings.TrimSuffix(port, "/tcp"))
+		} else if strings.HasSuffix(port, "/udp") {
+			udpPorts = append(udpPorts, strings.TrimSuffix(port, "/udp"))
 		}
 	}
-	// Format the ports in nmap format '-p1,2,3'
-	singleLine := strings.Join(port, "")
-	singleLine = strings.ReplaceAll(singleLine, "/"+protocol, ",")
-	// trim last comma in port list
-	if lastChar := len(singleLine) - 1; lastChar >= 0 && singleLine[lastChar] == ',' {
-		singleLine = singleLine[:lastChar]
-	}
-	return singleLine
+	tcpResult = strings.Join(tcpPorts, ",")
+	udpResult = strings.Join(udpPorts, ",")
+
+	tcpResult = strings.TrimSuffix(tcpResult, ",")
+	udpResult = strings.TrimSuffix(udpResult, ",")
+
+	return tcpResult, udpResult
 }
