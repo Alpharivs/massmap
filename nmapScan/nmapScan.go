@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sync"
 
 	"github.com/Alpharivs/massmap/terminator"
 	"github.com/fatih/color"
@@ -24,8 +23,7 @@ func endScan(protocol, folder, file string, content []byte) {
 	fmt.Printf("%s %s %s\n\n", arrows, color.YellowString("Results Saved to:"), outfile)
 }
 
-func Scan(protocol, openPorts, ip, folder string, wg *sync.WaitGroup, spinner *yacspin.Spinner) {
-	defer wg.Done()
+func Scan(protocol, openPorts, ip, folder string, spinner *yacspin.Spinner) {
 	terminator.Interrupt(spinner)
 	cmd := exec.Command("sudo", "nmap", "-p"+openPorts, protocol, "-sC", "-sV", "-Pn", ip, "-n")
 	// Capture output

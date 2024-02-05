@@ -11,10 +11,12 @@ import (
 	"strings"
 
 	"github.com/Alpharivs/massmap/terminator"
+	"github.com/fatih/color"
 )
 
 func Scan(ip, inter, rate string, docker bool) string {
 	sudoPath := "/usr/bin/sudo"
+	arrows := color.RedString("==>")
 
 	var cmd *exec.Cmd
 	if docker {
@@ -40,6 +42,14 @@ func Scan(ip, inter, rate string, docker bool) string {
 	}
 	// storing output
 	capturedOutput := output.Bytes()
+	// Checking if output is empty
+	if len(capturedOutput) > 0 {
+		fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), capturedOutput)
+	} else {
+		color.Red("\n\r✗ Masscan was interrupted or no port was found")
+		os.Exit(1)
+	}
+
 	return string(capturedOutput)
 }
 
