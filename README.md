@@ -11,7 +11,7 @@ Massmap is a wrapper for Masscan and Nmap that takes the output from masscan and
 ## Features
 - Automatically detects if target's IP is v4 or v6
 - Outputs full masscan TCP and UPD result and pipes it to nmap.
-- Parses result for UDP and TCP ports and concurrently scans them with namp.
+- Parses result for UDP and TCP ports and concurrently scans them with nmap.
 - Saves nmap results to file. 
 
 <img src="assets/gopher.png" align="right" width="200" height="180" />
@@ -33,7 +33,7 @@ git clone https://github.com/Alpharivs/massmap.git
 - Check that the path to your sudo binary is '/usr/bin/sudo' and if not edit it 'massScan/massScan.go', a relative path could have been used to avoid this but I'm not a fan of path hijacking ;)
 ```go
 // Edit path if necessary
-17 - sudoPath := "/usr/bin/sudo"
+18 - sudoPath := "/usr/bin/sudo"
 ```
 - Compile it after making the changes that you want.
 ```bash
@@ -71,7 +71,7 @@ Using the retired machine Fulcrum from [Hack The Box](https://app.hackthebox.com
 - Saved Results:
 ```bash
 ❯ ls
- nmap.out
+nmap.out
 ```
 <h2 align="center" > LVX-SIT</h2>
 <h3 align="center" > MMDCCLXXVII -- Ab urbe condita </h3>
