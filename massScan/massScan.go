@@ -7,15 +7,33 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"regexp"
 	"strings"
+	"syscall"
+	"time"
 
-	"github.com/Alpharivs/massmap/terminator"
 	"github.com/fatih/color"
 )
 
+// edit sudo path if necessary
+var sudoPath = "/usr/bin/sudo"
+
+func interruptMasscan(cmd *exec.Cmd) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		cmd.Process.Kill()
+		color.Red("\n\r✗ Interrupted, piping results to Nmap")
+		// Generating a delay between killing masscan and cleaning up to give time for file generation
+		time.Sleep(1 * time.Second)
+		// cleanup paused.conf
+		_ = os.Remove("paused.conf")
+	}()
+}
+
 func Scan(ip, inter, rate string, docker bool) string {
-	sudoPath := "/usr/bin/sudo"
 	arrows := color.RedString("==>")
 
 	var cmd *exec.Cmd
@@ -25,7 +43,7 @@ func Scan(ip, inter, rate string, docker bool) string {
 		cmd = exec.Command(sudoPath, "masscan", ip, "-p1-65535,U:1-65535", "-e", inter, "--rate="+rate)
 	}
 	// Interruption Handler
-	terminator.InterruptMasscan(cmd)
+	interruptMasscan(cmd)
 	// Capture live progress
 	var stdBuffer bytes.Buffer
 	liveProgress := io.MultiWriter(os.Stdout, &stdBuffer)

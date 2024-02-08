@@ -33,7 +33,7 @@ git clone https://github.com/Alpharivs/massmap.git
 - Check that the path to your sudo binary is '/usr/bin/sudo' and if not edit it 'massScan/massScan.go', a relative path could have been used to avoid this but I'm not a fan of path hijacking ;)
 ```go
 // Edit path if necessary
-18 - sudoPath := "/usr/bin/sudo"
+20 - sudoPath := "/usr/bin/sudo"
 ```
 - Compile it after making the changes that you want.
 ```bash

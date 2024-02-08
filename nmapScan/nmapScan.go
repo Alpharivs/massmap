@@ -5,11 +5,25 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 
-	"github.com/Alpharivs/massmap/terminator"
 	"github.com/fatih/color"
 	"github.com/theckman/yacspin"
 )
+
+func interrupt(spinner *yacspin.Spinner) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		/* ensure we stop the spinner before exiting, otherwise cursor will remain
+		   hidden and terminal will require a `reset` */
+		spinner.StopFailMessage("interrupted")
+		_ = spinner.StopFail()
+		os.Exit(0)
+	}()
+}
 
 func EndScan(protocol, folder, file string, content []byte) {
 	arrows := color.RedString("==>")
@@ -24,7 +38,7 @@ func EndScan(protocol, folder, file string, content []byte) {
 }
 
 func Scan(protocol, openPorts, ip string, spinner *yacspin.Spinner) []byte {
-	terminator.Interrupt(spinner)
+	interrupt(spinner)
 	cmd := exec.Command("sudo", "nmap", "-p"+openPorts, protocol, "-sC", "-sV", "-Pn", ip, "-n")
 	// Capture output
 	out, err := cmd.CombinedOutput()
@@ -35,7 +49,7 @@ func Scan(protocol, openPorts, ip string, spinner *yacspin.Spinner) []byte {
 }
 
 func Ipv6(ip string, spinner *yacspin.Spinner) []byte {
-	terminator.Interrupt(spinner)
+	interrupt(spinner)
 	cmd := exec.Command("sudo", "nmap", "-6", "-sC", "-sV", ip)
 	// Capture output
 	out, err := cmd.CombinedOutput()
