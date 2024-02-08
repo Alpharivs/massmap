@@ -22,6 +22,7 @@ var sudoPath = "/usr/bin/sudo"
 func interruptMasscan(cmd *exec.Cmd) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
 		<-c
 		cmd.Process.Kill()
@@ -35,6 +36,7 @@ func interruptMasscan(cmd *exec.Cmd) {
 
 func Scan(ip, inter, rate string, docker bool) string {
 	arrows := color.RedString("==>")
+	resultMessage := color.BlueString("Masscan Result:")
 
 	var cmd *exec.Cmd
 	if docker {
@@ -56,16 +58,16 @@ func Scan(ip, inter, rate string, docker bool) string {
 	// Executing the command with Run() to block until it finishes
 	err := cmd.Run()
 	if err != nil {
-		log.Println(err)
+		log.Fatalf("error executing masscan: %v", err)
 	}
 	// storing output
 	capturedOutput := output.Bytes()
 	// Checking if output is empty
 	if len(capturedOutput) > 0 {
-		fmt.Printf("\n%s %s \n\n%s\n", arrows, color.BlueString("Masscan Result:"), capturedOutput)
+		fmt.Printf("\n%s %s \n\n%s\n", arrows, resultMessage, capturedOutput)
 	} else {
-		color.Red("\n\r✗ Masscan was interrupted or no port was found")
-		os.Exit(1)
+		color.Red("\n\r✗ No port was found")
+		os.Exit(0)
 	}
 
 	return string(capturedOutput)

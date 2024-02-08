@@ -59,7 +59,8 @@ func createSpinner() (*yacspin.Spinner, error) {
 }
 
 func executeScan(spinner *yacspin.Spinner) {
-	fmt.Printf("%s %s %s \n", warning, color.YellowString("Executing masscan"), warning)
+	message := color.YellowString("Executing masscan")
+	fmt.Printf("%s %s %s \n", warning, message, warning)
 	// Run masscan
 	result := massScan.Scan(*flTarget, *flInter, *flRate, *flDocker)
 	// Separate and store TCP and UDP results
