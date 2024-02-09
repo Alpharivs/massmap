@@ -33,7 +33,7 @@ git clone https://github.com/Alpharivs/massmap.git
 - Check that the path to your sudo binary is '/usr/bin/sudo' and if not edit it 'massScan/massScan.go', a relative path could have been used to avoid this but I'm not a fan of path hijacking ;)
 ```go
 // Edit path if necessary
-20 - sudoPath := "/usr/bin/sudo"
+21 - sudoPath := "/usr/bin/sudo"
 ```
 - Compile it after making the changes that you want.
 ```bash
@@ -44,13 +44,13 @@ go build -o massmap main.go
 ❯ massmap -h
 Usage of massmap:
   -docker
-    	Use a Dockerized version of masscan.
+    	Use a dockerized version of masscan.
   -e string
-    	NIC for Masscan (default "tun0")
+    	NIC for masscan (default "tun0")
   -o string
-    	Folder to save Nmap output without trailing '/' (default ".") # I will improve this function later
+    	Path for nmap output, extensions will be added automatically (default "nmap")
   -r string
-    	Rate for Masscan (default "500")
+    	Rate for masscan (default "500")
   -u string
     	Target IP (Required)
 ```

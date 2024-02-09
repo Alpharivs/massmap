@@ -24,21 +24,21 @@ var (
 	flInter  = flag.String("e", "tun0", "NIC for masscan")
 	flTarget = flag.String("u", "", "Target IP (Required)")
 	flRate   = flag.String("r", "500", "Rate for masscan")
-	flFolder = flag.String("o", ".", "Folder to save nmap output without trailing '/'") // I will improve this function later
+	flOutput = flag.String("o", "nmap", "Path for nmap output, extensions will be added automatically")
 	flDocker = flag.Bool("docker", false, "Use a dockerized version of masscan.")
 	warning  = color.RedString("[!]")
 )
 
 // Constants
 const (
-	defaultNmapPath = "/nmap.out"
-	defaultUdpPath  = "/nmap_upd.out"
-	defaultIpv6Path = "/nmap_6.out"
-	tcpFlag         = "-sS"
-	updFlag         = "-sU"
-	tcpString       = "TCP"
-	udpString       = "UDP"
-	iPv6String      = "IPv6"
+	nmapExt    = ".tcp"
+	udpExt     = ".udp"
+	ipv6Ext    = ".v6"
+	tcpFlag    = "-sS"
+	updFlag    = "-sU"
+	tcpString  = "TCP"
+	udpString  = "UDP"
+	iPv6String = "IPv6"
 )
 
 func createSpinner() (*yacspin.Spinner, error) {
@@ -69,9 +69,9 @@ func executeScan(spinner *yacspin.Spinner) {
 	if tcpPorts != "" && udpPorts != "" {
 		executeConcurrentScan(spinner, tcpPorts, udpPorts)
 	} else if tcpPorts != "" {
-		executeSingleScan(spinner, tcpPorts, tcpFlag, tcpString, defaultNmapPath)
+		executeSingleScan(spinner, tcpPorts, tcpFlag, tcpString, nmapExt)
 	} else {
-		executeSingleScan(spinner, udpPorts, updFlag, udpString, defaultUdpPath)
+		executeSingleScan(spinner, udpPorts, updFlag, udpString, udpExt)
 	}
 }
 
@@ -86,7 +86,7 @@ func executeConcurrentScan(spinner *yacspin.Spinner, tcpPorts, udpPorts string) 
 	// Create buffered channels to receive output and prevent deadlock.
 	tcpOutput := make(chan []byte, 1)
 	udpOutput := make(chan []byte, 1)
-	/* Changed to anonymous routine from 'go nmapScan.Scan("-sU", udpPorts, *flTarget, *flFolder, &wg, spinner)'
+	/* Changed to anonymous routine from 'go nmapScan.Scan("-sU", udpPorts, *flTarget, *flOutput, &wg, spinner)'
 	if only tcp is discovered there's no need for Scan to run with concurrency and the solution was using the wg.Done() in an anon. routine */
 	go func() {
 		defer wg.Done()
@@ -114,8 +114,8 @@ func executeConcurrentScan(spinner *yacspin.Spinner, tcpPorts, udpPorts string) 
 	close(tcpOutput)
 	close(udpOutput)
 
-	nmapScan.EndScan(tcpString, *flFolder, defaultNmapPath, tcpResult)
-	nmapScan.EndScan(udpString, *flFolder, defaultUdpPath, udpResult)
+	nmapScan.EndScan(tcpString, *flOutput, nmapExt, tcpResult)
+	nmapScan.EndScan(udpString, *flOutput, udpExt, udpResult)
 }
 
 func clearTerminal(protocol string) {
@@ -131,7 +131,7 @@ func executeSingleScan(spinner *yacspin.Spinner, ports, nmapFlag, scanType, file
 	spinner.Message(message)
 
 	result := nmapScan.Scan(nmapFlag, ports, *flTarget, spinner)
-	nmapScan.EndScan(scanType, *flFolder, fileName, result)
+	nmapScan.EndScan(scanType, *flOutput, fileName, result)
 }
 
 func executeIPv6Scan(spinner *yacspin.Spinner) {
@@ -142,7 +142,7 @@ func executeIPv6Scan(spinner *yacspin.Spinner) {
 	spinner.Message(message)
 
 	ip6Result := nmapScan.Ipv6(*flTarget, spinner)
-	nmapScan.EndScan(iPv6String, *flFolder, defaultIpv6Path, ip6Result)
+	nmapScan.EndScan(iPv6String, *flOutput, ipv6Ext, ip6Result)
 }
 
 func main() {

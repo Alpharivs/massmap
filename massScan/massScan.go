@@ -17,7 +17,10 @@ import (
 )
 
 // edit sudo path if necessary
-var sudoPath = "/usr/bin/sudo"
+var (
+	sudoPath    = "/usr/bin/sudo"
+	interrupted bool
+)
 
 func interruptMasscan(cmd *exec.Cmd) {
 	c := make(chan os.Signal, 1)
@@ -25,6 +28,7 @@ func interruptMasscan(cmd *exec.Cmd) {
 
 	go func() {
 		<-c
+		interrupted = true
 		cmd.Process.Kill()
 		color.Red("\n\r✗ Interrupted, piping results to Nmap")
 		// Generating a delay between killing masscan and cleaning up to give time for file generation
@@ -45,6 +49,7 @@ func Scan(ip, inter, rate string, docker bool) string {
 		cmd = exec.Command(sudoPath, "masscan", ip, "-p1-65535,U:1-65535", "-e", inter, "--rate="+rate)
 	}
 	// Interruption Handler
+	interrupted = false
 	interruptMasscan(cmd)
 	// Capture live progress
 	var stdBuffer bytes.Buffer
@@ -57,7 +62,7 @@ func Scan(ip, inter, rate string, docker bool) string {
 	cmd.Stdout = liveResults
 	// Executing the command with Run() to block until it finishes
 	err := cmd.Run()
-	if err != nil {
+	if err != nil && !interrupted {
 		log.Fatalf("error executing masscan: %v", err)
 	}
 	// storing output
